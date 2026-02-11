@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 import sqlite3
 import os
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 app = Flask(__name__)
+app.secret_key = "dev-secret"
 DB_PATH = "data.db"
 
 def init_db():
@@ -35,31 +38,12 @@ def index():
     # POST
     if request.method == 'POST':
         msg = request.form['msg'].strip()
-        formuser = request.form['username'].strip()
-        formpass = request.form['password'].strip()
-        
         if msg != "":
             conn = sqlite3.connect(DB_PATH)
-            db_user = conn.execute("SELECT username FROM users WHERE username = ?", (formuser,)).fetchone()
             
-            if db_user is None:
-                conn.execute(
-                    "INSERT INTO users (username, password) VALUES (?,?)",
-                    (formuser, formpass)
-                )
-                print("Account created!!!")
-                loggedIn = True
-            else:
-                print("User exists!!!")
-                db_pass = conn.execute("SELECT password FROM users WHERE username = ?", (formuser,)).fetchone()
-                
-                if formpass == db_pass[0]:
-                    loggedIn = True
-                else:
-                    sysmsg = "Wrong pass!"
-                    
-            if loggedIn:
-                conn.execute(
+            formuser = session.get('username')
+            #if loggedIn:
+            conn.execute(
                         "INSERT INTO msgs (username, msg) VALUES (?,?)",
                         (formuser, msg)
                     )
@@ -73,16 +57,79 @@ def index():
     msgs = conn.execute("SELECT * FROM msgs").fetchall()
     conn.close()
 
-    return render_template('index.html', msgs=msgs, sysmsg=sysmsg, user=formuser, passw=formpass)
+    return render_template('index.html', msgs=msgs, sysmsg=sysmsg)
 
-@app.route('/detabase')
+@app.route('/database')
 def detabase():
     conn = sqlite3.connect(DB_PATH)
     msgs = conn.execute("SELECT * FROM msgs").fetchall()
     users = conn.execute("SELECT * FROM users").fetchall()
     
-    return str(msgs) + "<br><br>" + str(users)
+    return render_template('database.html', msgs=msgs, users=users)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    sysmsg = ""
+    conn = sqlite3.connect(DB_PATH)
+    if request.method == 'POST':
+        
+        formuser = request.form['username'].strip()
+        formpass = request.form['password'].strip()
+        
+        db_user = conn.execute("SELECT username FROM users WHERE username = ?", (formuser,)).fetchone()
+        
+        if db_user is None:
+            encryptedPass = generate_password_hash(formpass)
+            conn.execute(
+                "INSERT INTO users (username, password) VALUES (?,?)",
+                (formuser, encryptedPass)
+            )
+            print("Account created!!!")
+            loggedIn = True
+            sysmsg = "Account Created!"
+            
+        else:
+            print("User exists!!!")
+            db_pass = conn.execute("SELECT password FROM users WHERE username = ?", (formuser,)).fetchone()
+
+            if check_password_hash(db_pass[0], formpass):
+                loggedIn = True
+                sysmsg = "Logged in!"
+            else:
+                sysmsg = "Wrong pass!"
+                
+        conn.commit()
+        conn.close()
+                      
+        if loggedIn:
+            session['username'] = formuser
+            return redirect("/")
+
+    return render_template('login.html', sysmsg=sysmsg)            
 
 if __name__ == "__main__":
     app.run()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     

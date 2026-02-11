@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Database</title>
+    <style>
+        .users {
+            display: flex;
+            background: #a1ffed;
+            border: solid 2px #e3e3e3;
+            padding: 5px;
+        }
+
+        .user {
+            background: #f8ffcf;
+            border: solid 2px #e3e3e3;
+            padding: 5px;
+            flex: 1;
+            word-break: break-all;
+        }
+
+    </style>
+</head>
+
+<body>
+    {{users}}
+    <br><br>
+    {% for u in users %}
+    <div class="users">
+        <div class="user">{{u[0]}}</div>
+        <div class="user">{{u[1]}}</div>
+    </div>
+    {% endfor %}
+    <br><br>
+    {{msgs}}
+</body>
+
+</html>
