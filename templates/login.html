@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
 
 <body>
-    <form method="post">
-        <div>{{sysmsg}}</div>
+    <form method="post" class="auth-form">
+        <div>{{ sysmsg }}</div>
         <div>
-            <input type="text" name="username" placeholder="User..." value="{{user}}">
-            <input type="text" name="password" placeholder="Pass..." value="{{passw}}">
-        </div>
-        <button>Войти</button>
-    </form>
-</body>
 
-</html>
+            <input type="text" name="username" placeholder="User..." class="input-group">
+            <input type="text" name="password" placeholder="Pass..." class="input-group">
+        </div>
+        <button class="login-btn">ВОЙТИ</button>
+    </form>
+</body></html>
